@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2026 Alice Zenina and Alexander Grachev RTU MIREA (Russia)
+SPDX-License-Identifier: MIT
+Details in the LICENSE file in the root of the package.
+-->
+
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 

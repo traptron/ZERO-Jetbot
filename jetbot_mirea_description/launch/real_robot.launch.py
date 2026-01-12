@@ -1,7 +1,11 @@
+# Copyright (c) 2025 Alice Zenina and Alexander Grachev RTU MIREA (Russia)
+# SPDX-License-Identifier: MIT
+# Details in the LICENSE file in the root of the package.
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import ExecuteProcess, DeclareLaunchArgument, TimerAction
-from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution, PythonExpression
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, Command, PythonExpression
 from ament_index_python.packages import get_package_share_directory
 import os
 from launch.conditions import IfCondition
@@ -25,7 +29,6 @@ def generate_launch_description():
     robot_desc = Command(['xacro ', urdf_file])
     
     rviz_config_dir = os.path.join(pkg_path, 'rviz', 'jetbot_mirea.rviz')
-    
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
