@@ -28,6 +28,11 @@
         <color rgba="0.0 0.0 0.0 1" />
     </material>
 
+    <material name="silver">
+        <color rgba="0.67 0.67 0.67 1.0" />
+    </material>
+
+
     <!-- Specify some standard inertial calculations https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
     <!-- These make use of xacro's mathematical functionality -->
 
