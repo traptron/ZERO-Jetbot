@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="minibox">
+    <!-- Флаг static="true" важен для неподвижных объектов -->
+    <static>false</static>
+    <link name="link">
+
+      <inertial>
+        <mass>0.3375</mass>
+        <inertia>
+          <ixx>0.0012656</ixx> <iyy>0.0012656</iyy> <izz>0.0012656</izz>
+          <ixy>0.0</ixy> <ixz>0.0</ixz> <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.15 0.15 0.15</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.1 0.1 1</ambient>
+          <diffuse>0.9 0.1 0.1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+      <!-- Критически важный блок для симуляции! -->
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.15 0.15 0.15</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.3</restitution_coefficient>
+          </bounce>
+        </surface>
+      </collision>
+    </link>
+  </model>
+</sdf>

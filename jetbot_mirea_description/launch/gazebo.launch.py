@@ -1,83 +1,139 @@
-# Copyright (c) 2025 Alice Zenina and Alexander Grachev RTU MIREA (Russia)
-# SPDX-License-Identifier: MIT
-# Details in the LICENSE file in the root of the package.
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import ExecuteProcess, DeclareLaunchArgument, TimerAction
-from launch.substitutions import LaunchConfiguration, Command, PythonExpression
-from ament_index_python.packages import get_package_share_directory
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, TimerAction, OpaqueFunction
+from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.substitutions import FindPackageShare
+from launch.conditions import IfCondition, UnlessCondition
+# Не забудьте добавить импорт в начале файла
 import os
-from launch.conditions import IfCondition
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    
+    # 1. Объявляем аргументы
     launch_rviz_arg = DeclareLaunchArgument(
-        'launch_rviz_description',
-        default_value='True',
-        description='Запускает / не запускает RViz2.',
-        choices=['True', 'False']
+        'launch_rviz',
+        default_value='true',
+        description='Запускать RViz2?',
+        choices=['true', 'false']
     )
-
-    rviz_condition = PythonExpression([
-        '"', LaunchConfiguration('launch_rviz_description'), '" == "True"'
+    
+    model_use_arg = DeclareLaunchArgument(
+        'model_use',
+        default_value='ideal',
+        description='Позволяет выбрать между реальной и идеальной моделью jetbot?',
+        choices=['ideal', 'real']
+    )
+    
+    world_arg = DeclareLaunchArgument(
+        'world_id',
+        default_value='1',
+        description='ID полигона: 1 - Г210, 2 - складской.',
+        choices=['1', '2']
+    )
+    
+    # 2. Возвращаем описание запуска
+    return LaunchDescription([
+        launch_rviz_arg,
+        model_use_arg,
+        world_arg,
+        # Используем OpaqueFunction для отложенного выполнения
+        OpaqueFunction(function=launch_setup)
     ])
-    
-    pkg_path = get_package_share_directory('jetbot_mirea_description')
-    urdf_file = os.path.join(pkg_path, 'urdf', 'jetbot_mirea_simple_gazebo.urdf.xacro')
-    robot_desc = Command(['xacro ', urdf_file])
-    
-    rviz_config_dir = os.path.join(pkg_path, 'rviz', 'gazebo_set.rviz')
 
-    # Базовый путь к мирам Gazebo (используем правильный путь)
-    gazebo_world_path =  os.path.join(pkg_path, 'world', 'simple_labirint.world')
+
+def launch_setup(context, *args, **kwargs):
+    """Функция, которая выполняется при запуске и имеет доступ к значениям аргументов"""
+    launch_actions = []
     
-    gazebo = ExecuteProcess(
-        cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so',gazebo_world_path],
-        output='screen'
+    # 3. Получаем ЗНАЧЕНИЕ аргумента (как строку)
+    world_id = context.launch_configurations.get('world_id', '1')
+    launch_rviz = context.launch_configurations.get('launch_rviz', 'true')
+    model_use = context.launch_configurations.get('model_use', 'ideal')
+
+    
+    # 4. Маппинг миров и их конфигов
+    world_configs = {
+        '1': {
+            'world_file': 'G210.world',
+            'rviz_config': 'gazebo_set_G210.rviz',
+            'height_spawn': '1.5',
+        },
+        '2': {
+            'world_file': 'simple_labirint.world',
+            'rviz_config': 'gazebo_set_labirint.rviz',
+            'height_spawn': '0.1',
+        }
+    }
+    
+    # 5. Выбираем конфигурацию на основе world_id
+    selected_config = world_configs.get(world_id, world_configs['1'])
+    
+    # 6. Получаем пути к файлам пакета
+    pkg_path = get_package_share_directory('jetbot_mirea_description')
+    
+    # 7. Формируем пути
+    world_path = os.path.join(pkg_path, 'world', selected_config['world_file'])
+    rviz_config_path = os.path.join(pkg_path, 'rviz', selected_config['rviz_config'])
+    
+    if model_use.lower() == 'real':
+        urdf_path = os.path.join(pkg_path, 'urdf', 'jetbot_mirea_simple_gazebo_real.urdf.xacro')
+    else:
+        urdf_path = os.path.join(pkg_path, 'urdf', 'jetbot_mirea_simple_gazebo_ideal.urdf.xacro')
+
+    
+    # 8. Запуск Gazebo через стандартный launch файл
+    gazebo_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            get_package_share_directory('gazebo_ros'),
+            '/launch/gazebo.launch.py'
+        ]),
+        launch_arguments={
+            'world': world_path,
+            'verbose': 'true'
+        }.items()
     )
+    launch_actions.append(gazebo_launch)
     
+    # 9. Публикатор состояния робота
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        name='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_desc,
-                     'use_sim_time': True}]
+        parameters=[{
+            'robot_description': Command(['xacro ', urdf_path]),
+            'use_sim_time': True
+        }]
     )
+    launch_actions.append(robot_state_publisher)
     
+    # 10. Спавн модели в Gazebo (с небольшой задержкой)
     spawn_entity = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
-        arguments=['-entity', 'jetbot', '-topic', 'robot_description', '-x', '0', '-y', '0', '-z', '0.1'],
+        arguments=[
+            '-entity', 'jetbot',
+            '-topic', 'robot_description',
+            '-x', '0', '-y', '0', '-z', f'{selected_config["height_spawn"]}',
+        ],
         output='screen',
     )
+    delayed_spawn = TimerAction(period=3.0, actions=[spawn_entity])
+    launch_actions.append(delayed_spawn)
     
-    rviz_node = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-        arguments=['-d', rviz_config_dir],
-        parameters=[{'use_sim_time': True}],
-        condition=IfCondition(rviz_condition),
-    )
+    # 11. Запуск RViz2 (только если нужно)
+    if launch_rviz.lower() == 'true':
+        rviz_node = Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            output='screen',
+            arguments=['-d', rviz_config_path],
+            parameters=[{'use_sim_time': True}]
+        )
+        launch_actions.append(rviz_node)
     
-    # Задержка для спавна (чтобы Gazebo успел запуститься)
-    delayed_nodes = TimerAction(
-        period=3.0,
-        actions=[
-            spawn_entity,
-            rviz_node,
-            
-        ]
-    )
-    
-    return LaunchDescription([
-        launch_rviz_arg,
+    return launch_actions
 
-        gazebo,
-        robot_state_publisher,
-        delayed_nodes
-    ])
+

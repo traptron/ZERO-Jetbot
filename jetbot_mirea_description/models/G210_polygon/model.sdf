@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="G210_polygon">
+    <!-- Флаг static="true" важен для неподвижных объектов -->
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <!-- Путь к вашему DAE-файлу относительно папки meshes/ -->
+          <mesh>
+	    <uri>model://G210_polygon/meshes/G210_polygon.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <!-- Критически важный блок для симуляции! -->
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://G210_polygon/meshes/G210_polygon.dae</uri>       
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
