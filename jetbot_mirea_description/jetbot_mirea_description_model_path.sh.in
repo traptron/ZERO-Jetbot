@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 # Добавляем папку models текущего пакета в GAZEBO_MODEL_PATH
 export GAZEBO_MODEL_PATH="@CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@/models:$GAZEBO_MODEL_PATH"
+export IGN_GAZEBO_RESOURCE_PATH="@CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@/models:$IGN_GAZEBO_RESOURCE_PATH"
+
 source /usr/share/gazebo/setup.sh

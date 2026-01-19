@@ -74,7 +74,7 @@ def launch_setup(context, *args, **kwargs):
     pkg_path = get_package_share_directory('jetbot_mirea_description')
     
     # 7. Формируем пути
-    world_path = os.path.join(pkg_path, 'world', selected_config['world_file'])
+    world_path = os.path.join(pkg_path, 'worlds', selected_config['world_file'])
     rviz_config_path = os.path.join(pkg_path, 'rviz', selected_config['rviz_config'])
     
     if model_use.lower() == 'real':
