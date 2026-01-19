@@ -101,3 +101,11 @@ $2;Kp_L;Ki_L;Kd_L;Kp_R;Ki_R;Kd_R;#
 4. **Получение коэффициентов PID-регуляторов:**
     Если отправить сообщение-команду типа 5 с Jetson на ESP32, то коэффициенты регуляторов на ESP32 будут отправлены в ответ в виде сообщения-ответа типа 2 с Jetson на ESP32.
     
+
+
+# Репозитории с картами, на которых можно погонять
+- [Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps)
+- [gazebo_models](https://github.com/tudelft/gazebo_models)
+- [aws-robomaker-racetrack-world](https://github.com/aws-robotics/aws-robomaker-racetrack-world)
+- [pal_gazebo_worlds](https://github.com/pal-robotics/pal_gazebo_worlds)
+- [gazebo-rcll](https://github.com/robocup-logistics/gazebo-rcll)
