@@ -28,9 +28,9 @@ def generate_launch_description():
     
     world_arg = DeclareLaunchArgument(
         'world_id',
-        default_value='1',
-        description='ID полигона: 1 - Г210, 2 - складской.',
-        choices=['1', '2']
+        default_value='2',
+        description='ID полигона: 1 - Г210, 2 - Г210 с перпятствиями, 3 - складской.',
+        choices=['1', '2', '3']
     )
     
     # 2. Возвращаем описание запуска
@@ -48,7 +48,7 @@ def launch_setup(context, *args, **kwargs):
     launch_actions = []
     
     # 3. Получаем ЗНАЧЕНИЕ аргумента (как строку)
-    world_id = context.launch_configurations.get('world_id', '1')
+    world_id = context.launch_configurations.get('world_id', '2')
     launch_rviz = context.launch_configurations.get('launch_rviz', 'true')
     model_use = context.launch_configurations.get('model_use', 'ideal')
 
@@ -59,12 +59,21 @@ def launch_setup(context, *args, **kwargs):
             'world_file': 'G210.world',
             'rviz_config': 'gazebo_set_G210.rviz',
             'height_spawn': '1.5',
+            'x_spawn': '0.0',
         },
         '2': {
+            'world_file': 'G210_with_boxes.world',
+            'rviz_config': 'gazebo_set_G210.rviz',
+            'height_spawn': '1.5',
+            'x_spawn': '-1.0',
+        },
+        '3': {
             'world_file': 'simple_labirint.world',
             'rviz_config': 'gazebo_set_labirint.rviz',
             'height_spawn': '0.1',
-        }
+            'x_spawn': '0.0',
+        },
+
     }
     
     # 5. Выбираем конфигурацию на основе world_id
@@ -115,7 +124,7 @@ def launch_setup(context, *args, **kwargs):
         arguments=[
             '-entity', 'jetbot',
             '-topic', 'robot_description',
-            '-x', '0', '-y', '0', '-z', f'{selected_config["height_spawn"]}',
+            '-x', f'{selected_config["x_spawn"]}', '-y', '0', '-z', f'{selected_config["height_spawn"]}',
         ],
         output='screen',
     )
