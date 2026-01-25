@@ -37,7 +37,11 @@
     <xacro:property name="back_camera_height" value="0.02"/>
     <xacro:property name="back_camera_mass" value="0.05"/>
 
-    
+    <!-- Параметры маяка marvelmind -->
+    <xacro:property name="marvelmind_lenght" value="0.04"/>
+    <xacro:property name="marvelmind_width" value="0.03"/>
+    <xacro:property name="marvelmind_height" value="0.015"/>
+    <xacro:property name="marvelmind_mass" value="0.05"/>
 
     <!-- "Импорты" модулей -->
     <xacro:include filename="$(find realsense_ros_gazebo)/xacro/depthcam.xacro"/>
@@ -172,6 +176,35 @@
         <xacro:inertial_cylinder mass="${lidar_mass}" length="${lidar_height}" radius="${lidar_radius}">
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         </xacro:inertial_cylinder>
+    </link>
+
+
+    <!-- Маяк marvelmind -->
+    <joint name="marvelmind_joint" type="fixed">
+        <parent link="computer_link"/>
+        <child link="marvelmind_link"/>
+        <origin xyz="0.0 0.0 ${computer_height/2 + marvelmind_height/2}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="marvelmind_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${marvelmind_lenght} ${marvelmind_width} ${marvelmind_height}"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${marvelmind_lenght} ${marvelmind_width} ${marvelmind_height}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_box mass="${marvelmind_mass}" x="${marvelmind_lenght}" y="${marvelmind_width}" z="${marvelmind_height}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_box>
     </link>
 
 

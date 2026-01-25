@@ -73,6 +73,14 @@
         <kd>1.0</kd>
     </gazebo>
 
+    <gazebo reference="marvelmind_link">
+        <material>Gazebo/Red</material>
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <kp>1000000.0</kp>
+        <kd>1.0</kd>
+    </gazebo>
+
     <!-- Плагин дифференциального привода -->
     <gazebo>
         <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
@@ -246,6 +254,52 @@
             </plugin>
         </sensor>
     </gazebo>
+
+    <!-- GPS (marvelmind)-->
+    <gazebo reference="marvelmind_link">
+        <sensor name="marvelmind_gps" type="gps">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <gps>
+            <position_sensing>
+              <horizontal>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>2e-4</stddev>
+                </noise>
+              </horizontal>
+              <vertical>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>2e-4</stddev>
+                </noise>
+              </vertical>
+            </position_sensing>
+            <velocity_sensing>
+              <horizontal>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>2e-4</stddev>
+                </noise>
+              </horizontal>
+              <vertical>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>2e-4</stddev>
+                </noise>
+              </vertical>
+            </velocity_sensing>
+          </gps>
+          <plugin name="marvelmind_gps_plugin" filename="libgazebo_ros_gps_sensor.so">
+            <ros>
+              <namespace>/gps</namespace>
+              <remapping>~/out:=data</remapping>
+              <remapping>~/vel:=velocity</remapping>
+            </ros>
+          </plugin>
+        </sensor>
+    </gazebo>
+
 
 </robot>
 
