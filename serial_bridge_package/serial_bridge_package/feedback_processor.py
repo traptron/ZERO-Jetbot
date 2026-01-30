@@ -6,17 +6,17 @@
 
 '''
 АННОТАЦИЯ
-ROS2-узел для обработки сырых данных с ESP32 в формате $data1;...;data13# с
+ROS2-узел для обработки сырых данных с ESP32 в формате $data1;...;dataN# с
 публикацией в темы одометрии, IMU, температуры, напряжения, нагрузки и позиции
 колес. Преобразует углы в кватернионы и публикует преобразования систем
-координат через TF. Ожидает строго форматированные сообщения с 13 числовыми
+координат через TF. Ожидает строго форматированные сообщения с N числовыми
 полями без обработки ошибок связи.
 
 ANNOTATION
-ROS2 node for processing raw ESP32 data in $data1;...;data13# format with
+ROS2 node for processing raw ESP32 data in $data1;...;dataN# format with
 publishing to odometry, IMU, temperature, voltage, load and wheel position
 topics. Converts angles to quaternions and broadcasts coordinate frame
-transformations via TF. Requires strictly formatted 13-field numeric messages
+transformations via TF. Requires strictly formatted N-field numeric messages
 without communication error handling.
 '''
 

@@ -30,7 +30,6 @@ def generate_launch_description():
         parameters=[{
             'serial_port': '/dev/esp32',
             'baudrate': 115200,
-            'timeout': 1,
             'ros_in_topic': 'serial/cmd',
             'ros_out_topic': 'serial/feedback',
         }],
