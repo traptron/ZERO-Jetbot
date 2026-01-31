@@ -1,5 +1,4 @@
-ros-galactic-xacro
-ros-galactic-robot-state-publisher
-ros-galactic-joint-state-publisher
-ros-galactic-gazebo-*
-
+ros-humble-xacro
+ros-humble-robot-state-publisher
+ros-humble-joint-state-publisher
+ros-humble-gazebo-*

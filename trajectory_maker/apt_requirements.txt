@@ -1,2 +1,2 @@
-ros-galactic-navigation2
-ros-galactic-nav2-bringup
+ros-humble-navigation2
+ros-humble-nav2-bringup

@@ -30,3 +30,5 @@ slam_toolbox:
     # Инициализация
     publish_2d_scan: true
     publish_odom: true
+
+    use_sim_time: true
