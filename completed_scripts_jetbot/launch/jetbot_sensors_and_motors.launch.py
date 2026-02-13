@@ -39,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
 
     sllidar_params = {
         'serial_port': LaunchConfiguration('lidar_serial_port'),
-        'frame_id': "rplidar_link",
+        'frame_id': "lidar_link",
         'angle_compensate': LaunchConfiguration('angle_compensate'),
         'scan_mode': LaunchConfiguration('scan_mode'),
     }
@@ -52,6 +52,11 @@ def launch_setup(context, *args, **kwargs):
     )
     pkg2_launch_dir = os.path.join(
         get_package_share_directory('sllidar_ros2'),
+        'launch'
+    )
+    
+    pkg3_launch_dir = os.path.join(
+        get_package_share_directory('lidar_filter'),
         'launch'
     )
 
@@ -93,6 +98,15 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments=sllidar_params.items(),
         condition=IfCondition(enable_lidar_condition),
     )
+    
+    lidar_filter_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            pkg3_launch_dir, 'filter.launch.py'
+            )
+        ),
+        launch_arguments=sllidar_params.items(),
+        condition=IfCondition(enable_lidar_condition),
+    )
 
     # ========================================================================
     # System nodes 
@@ -107,6 +121,7 @@ def launch_setup(context, *args, **kwargs):
     return [
         serial_bridge_launch,
         sllidar_launch,
+        lidar_filter_launch,
         change_env,
         front_camera_launch,
         transform_node,
@@ -158,11 +173,7 @@ def generate_launch_description():
         choices=['Standard', 'Express', 'Boost'],
     )
 
-    use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='false',
-        description='Use simulation (Gazebo) clock if true'
-    )
+
     
     return LaunchDescription([
         lidar_mode_arg,
@@ -172,7 +183,6 @@ def generate_launch_description():
         lidar_serial_port_arg,
         angle_compensate_arg,
         scan_mode_arg,
-        use_sim_time_arg,
         
         OpaqueFunction(function=launch_setup),
     ])

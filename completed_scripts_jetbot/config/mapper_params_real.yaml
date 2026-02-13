@@ -9,7 +9,7 @@ slam_toolbox:
     ceres_loss_function: None
 
     # Параметры лазера
-    scan_topic: /scan
+    scan_topic: /scan_filtered
     odom_topic: /odom
     mode: mapping  # важно: режим "mapping"
 
@@ -31,4 +31,4 @@ slam_toolbox:
     publish_2d_scan: true
     publish_odom: true
 
-    use_sim_time: true
+    use_sim_time: false

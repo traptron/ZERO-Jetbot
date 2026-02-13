@@ -14,8 +14,6 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.conditions import IfCondition
 
-
-
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
@@ -33,8 +31,8 @@ def launch_setup(context, *args, **kwargs):
 
 
     config_dir = get_package_share_directory('completed_scripts_jetbot')
-    path_to_config_1 = os.path.join(config_dir, 'config', 'mapper_params_online_async.yaml')
-    path_to_config_2 = os.path.join(config_dir, 'config', 'mapping.yaml')
+    path_to_config_1 = os.path.join(config_dir, 'config', 'mapper_params_real.yaml')
+    path_to_config_2 = os.path.join(config_dir, 'config', 'mapper_params_sim.yaml')
 
 
     localization_launch_1 = IncludeLaunchDescription(
@@ -77,22 +75,13 @@ def generate_launch_description():
     config_choice_arg = DeclareLaunchArgument(
         'config_choice',
         default_value='1',
-        description='Select config file to use (1: mapper_params_online_async.yaml   2: mapping.yaml)',
+        description='Select config file to use (1: mapper_params_real.yaml   2: mapper_params_sim.yaml)',
         choices=['1', '2'],
     )
-
-    use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='false',
-        description='Use simulation (Gazebo) clock if true'
-    )
-
-
     
     return LaunchDescription([
         
         config_choice_arg,
-        use_sim_time_arg,
 
         OpaqueFunction(function=launch_setup)
     ])

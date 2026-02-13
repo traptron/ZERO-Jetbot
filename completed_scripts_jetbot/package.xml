@@ -20,6 +20,7 @@
   <exec_depend>sllidar_ros2</exec_depend>
   <exec_depend>serial_bridge_package</exec_depend>
   <exec_depend>jetbot_mirea_description</exec_depend>
+  <exec_depend>lidar_filter</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

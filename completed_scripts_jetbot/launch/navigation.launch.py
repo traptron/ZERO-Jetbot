@@ -3,54 +3,88 @@
 # Details in the LICENSE file in the root of the package.
 
 import os
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    OpaqueFunction,
+)
+from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.conditions import IfCondition
+
+
+
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+
+
+def launch_setup(context, *args, **kwargs):
+
+    localization_config_1_condition = PythonExpression([
+        '"', LaunchConfiguration('config_choice'), '" == "1"'
+    ])    
+    localization_config_2_condition = PythonExpression([
+        '"', LaunchConfiguration('config_choice'), '" == "2"'
+    ])
+
+
+    config_dir = get_package_share_directory('completed_scripts_jetbot')
+    path_to_config_1 = os.path.join(config_dir, 'config', 'navigation_param_real.yaml')
+    path_to_config_2 = os.path.join(config_dir, 'config', 'navigation_param_sim.yaml')
+
+
+    localization_launch_1 = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([
+                PathJoinSubstitution([
+                    FindPackageShare('nav2_bringup'),
+                    'launch',
+                    'navigation_launch.py'
+                ])
+            ]),
+            launch_arguments={
+                'params_file': path_to_config_1
+            }.items(),
+            condition=IfCondition(localization_config_1_condition)
+        )
+    
+
+    localization_launch_2 = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([
+                PathJoinSubstitution([
+                    FindPackageShare('nav2_bringup'),
+                    'launch',
+                    'navigation_launch.py'
+                ])
+            ]),
+            launch_arguments={
+                'params_file': path_to_config_2
+            }.items(),
+            condition=IfCondition(localization_config_2_condition)
+        )
+
+    return [
+        localization_launch_1,
+        localization_launch_2,
+    ]
 
 
 def generate_launch_description():
 
-    path_to_pkg = get_package_share_directory('completed_scripts_jetbot')
+    config_choice_arg = DeclareLaunchArgument(
+        'config_choice',
+        default_value='1',
+        description='Select config file to use (1: navigation_param_real.yaml   2: navigation_param_sim.yaml)',
+        choices=['1', '2'],
+    )
 
-    nav2_yaml = os.path.join(path_to_pkg, 'config', 'navigation', 'amcl_config.yaml')
-    map_file = os.path.join(path_to_pkg, 'maps', 'map.yaml')
-    map_file = os.path.join(path_to_pkg, 'maps', 'G210_with_boxes_map.yaml')
-
-
-
+   
     return LaunchDescription([
         
-        Node(
-            package='nav2_amcl',
-            executable='amcl',
-            name='amcl',
-            output='screen',
-            parameters=[nav2_yaml]
-        ),
+        config_choice_arg,
 
-
-        Node(
-            package='nav2_lifecycle_manager',
-            executable='lifecycle_manager',
-            name='lifecycle_manager',
-            output='screen',
-            parameters=[{'autostart': True},
-                        {'node_names': ['map_server',
-                                        'amcl',
-
-                                        ]}]),
-        TimerAction(
-            period=2.0,  # Задержка в секундах
-            actions=[
-                Node(
-                    package='nav2_map_server',
-                    executable='map_server',
-                    name='map_server',
-                    output='screen',
-                    parameters=[{'use_sim_time': True},
-                                {'yaml_filename': map_file}]
-                ),
-            ]
-        )
+        OpaqueFunction(function=launch_setup)
     ])
