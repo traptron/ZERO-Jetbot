@@ -1,11 +1,12 @@
+# Copyright (c) 2026 Alice Zenina and Alexander Grachev RTU MIREA (Russia)
+# SPDX-License-Identifier: MIT
+# Details in the LICENSE file in the root of the package.
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, TimerAction, OpaqueFunction
-from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
+from launch.substitutions import Command, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
-from launch.conditions import IfCondition, UnlessCondition
-# Не забудьте добавить импорт в начале файла
 import os
 from ament_index_python.packages import get_package_share_directory
 
@@ -29,7 +30,7 @@ def generate_launch_description():
     world_arg = DeclareLaunchArgument(
         'world_id',
         default_value='2',
-        description='ID полигона: 1 - Г210, 2 - Г210 с перпятствиями, 3 - складской.',
+        description='ID полигона: 1 - Г210, 2 - Г210 с препятствиями, 3 - склад.',
         choices=['1', '2', '3']
     )
     
