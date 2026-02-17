@@ -28,9 +28,11 @@ def generate_launch_description():
     
     world_arg = DeclareLaunchArgument(
         'world_id',
-        default_value='2',
-        description='ID полигона: 1 - Г210, 2 - Г210 с перпятствиями, 3 - складской.',
-        choices=['1', '2', '3']
+        default_value='visualization_2',
+        description='конфиг rviz: visualization - визуализация, navigation - навигация по карте' \
+        'и ' \
+        'ID полигона: 1 - Г210, 2 - Г210 с препятствиями, 3 - складской.',
+        choices=['visualization_1', 'visualization_2', 'navigation_', 'navigation_2']
     )
     
     # 2. Возвращаем описание запуска
@@ -48,26 +50,38 @@ def launch_setup(context, *args, **kwargs):
     launch_actions = []
     
     # 3. Получаем ЗНАЧЕНИЕ аргумента (как строку)
-    world_id = context.launch_configurations.get('world_id', '2')
+    world_id = context.launch_configurations.get('world_id', 'visualization_2')
     launch_rviz = context.launch_configurations.get('launch_rviz', 'true')
     model_use = context.launch_configurations.get('model_use', 'ideal')
 
     
     # 4. Маппинг миров и их конфигов
     world_configs = {
-        '1': {
+        'visualization_1': {
             'world_file': 'G210.world',
-            'rviz_config': 'gazebo_set_G210.rviz',
+            'rviz_config': 'visualization.rviz',
             'height_spawn': '1.5',
             'x_spawn': '0.0',
         },
-        '2': {
+        'visualization_2': {
             'world_file': 'G210_with_boxes.world',
-            'rviz_config': 'gazebo_set_G210.rviz',
+            'rviz_config': 'visualization.rviz',
             'height_spawn': '1.5',
             'x_spawn': '-1.0',
         },
-        '3': {
+        'navigation_1': {
+            'world_file': 'G210.world',
+            'rviz_config': 'load_map.rviz',
+            'height_spawn': '1.5',
+            'x_spawn': '0.0',
+        },
+        'navigation_2': {
+            'world_file': 'G210_with_boxes.world',
+            'rviz_config': 'load_map.rviz',
+            'height_spawn': '1.5',
+            'x_spawn': '-1.0',
+        },
+        'simple_labirint_3': {
             'world_file': 'simple_labirint.world',
             'rviz_config': 'gazebo_set_labirint.rviz',
             'height_spawn': '0.1',
@@ -77,7 +91,7 @@ def launch_setup(context, *args, **kwargs):
     }
     
     # 5. Выбираем конфигурацию на основе world_id
-    selected_config = world_configs.get(world_id, world_configs['1'])
+    selected_config = world_configs.get(world_id, world_configs['visualization_2'])
     
     # 6. Получаем пути к файлам пакета
     pkg_path = get_package_share_directory('jetbot_mirea_description')
