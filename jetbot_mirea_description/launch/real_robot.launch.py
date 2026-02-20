@@ -25,7 +25,7 @@ def generate_launch_description():
     ])
     
     pkg_path = get_package_share_directory('jetbot_mirea_description')
-    urdf_file = os.path.join(pkg_path, 'urdf', 'jetbot_mirea_simple_gazebo.urdf.xacro')
+    urdf_file = os.path.join(pkg_path, 'urdf', 'jetbot_mirea_simple_gazebo_real.urdf.xacro')
     robot_desc = Command(['xacro ', urdf_file])
     
     rviz_config_dir = os.path.join(pkg_path, 'rviz', 'real_set.rviz')
