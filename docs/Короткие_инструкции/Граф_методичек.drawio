@@ -1,0 +1,147 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.1.1 Chrome/132.0.6834.210 Electron/34.3.3 Safari/537.36" version="26.1.1">
+  <diagram name="Страница — 1" id="kkGqyTi5d-Q-OwcS_Qtd">
+    <mxGraphModel dx="1412" dy="957" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="HjraYN6UqSYQrITyCSc7-1" value="0 Загрузка на ESP32 прошивки" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="353" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-2" value="0 Подключение к Jetson Nano" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-5" value="&lt;span style=&quot;text-align: left;&quot;&gt;0 Развёртывание репозитория с ПО для jetbot_mirea&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-15" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-6" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-6" value="1 Как запустить симуляцию" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="353" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-7" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-7" value="1 Создание симлинка для ESP32" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-17" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-8" target="HjraYN6UqSYQrITyCSc7-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-18" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-8" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-19" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-8" target="HjraYN6UqSYQrITyCSc7-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-8" value="2 Как запустить датчики и приводной уровень на роботе jetbot_mirea" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-20" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-9" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-21" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-9" target="HjraYN6UqSYQrITyCSc7-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-9" value="2 Как настроить ПИД регуляторы" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-22" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-10" target="HjraYN6UqSYQrITyCSc7-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-23" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-10" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-24" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-10" target="HjraYN6UqSYQrITyCSc7-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-10" value="3 Как запустить режим картографирования для реального робота" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="790" y="130" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-25" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-11" target="HjraYN6UqSYQrITyCSc7-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-26" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-11" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="420" />
+              <mxPoint x="320" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-11" value="3 Как запустить режим картографирования для симуляции" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="160" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-27" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-12" target="HjraYN6UqSYQrITyCSc7-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-12" value="3 Управление движением jetbot_mirea с помощью клавиатуры" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="150" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-28" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-13" target="HjraYN6UqSYQrITyCSc7-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="190" />
+              <mxPoint x="900" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-29" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-13" target="HjraYN6UqSYQrITyCSc7-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="190" />
+              <mxPoint x="900" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-30" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-13" target="HjraYN6UqSYQrITyCSc7-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-13" value="4 Как запустить режим автономной навигации по карте для реального робота" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="930" y="40" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-31" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-14" target="HjraYN6UqSYQrITyCSc7-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-32" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="HjraYN6UqSYQrITyCSc7-14" target="HjraYN6UqSYQrITyCSc7-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HjraYN6UqSYQrITyCSc7-14" value="4 Как запустить режим автономной навигации по карте для симуляции" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="40" width="120" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
