@@ -1,4 +1,4 @@
-ros-humble-xacro
-ros-humble-robot-state-publisher
-ros-humble-joint-state-publisher
-ros-humble-gazebo-*
+ros-$ROS_DISTRO-xacro
+ros-$ROS_DISTRO-robot-state-publisher
+ros-$ROS_DISTRO-joint-state-publisher
+ros-$ROS_DISTRO-gazebo-*
