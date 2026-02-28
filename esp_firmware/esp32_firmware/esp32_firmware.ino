@@ -5,72 +5,75 @@
 #include <Arduino.h>
 #include <math.h>
 #include <Preferences.h>
-
-// Библиотеки регуляции и управления
 #include "GyverPID.h"
 #include <Wire.h>                     
 #include <Adafruit_PWMServoDriver.h> 
 #include <stdio.h>
+#include <GyverOLED.h>
+#include "INA219.h"
 
-// Настройки для записи в постоянную память
-#define RW_MODE false
-#define RO_MODE true
-Preferences fleshMemory;
-
-String inputString = "";         // a String to hold incoming data
-bool stringComplete = false;  // whether the string is complete
-bool input_open = false;
 
 //Константы физических параметров
 const float Pi = 3.14159;
-const float l = 0.117;
-const float r = 0.065/2;
+const float l = 0.117;  // длина базы
+const float r = 0.065/2; // радиус ведущего колеса
+const float max_voltage = 4.2 * 3;
+const float min_voltage = 3.3 * 3;
 
-float max_frequency = 2.5;
-float max_vel = max_frequency * 2 * Pi * r;
-
-#define LED_PIN 13 // Оставлен для debug
 
 // Пины энкодеров
 #define PIN_R_A 34  // Пин для сигнала 1
 #define PIN_R_B 35  // Пин для сигнала 2
 #define PIN_L_A 33  // Пин для сигнала 3
 #define PIN_L_B 32  // Пин для сигнала 4
+#define LED_PIN 13 // Оставлен для debug
+
+
+
+// Коэффициенты по умолчанию для регуляторов
+float Kp_R = 2.075;
+float Ki_R = 0.0;
+float Kd_R = 0.005;
+
+float Kp_L = 2.075; 
+float Ki_L = 0.0;
+float Kd_L = 0.005;
 
 // Частота дискретизации для ПИДов
 float dt = 30;
 
-// Правый ПИД
-float Kp_R = 2.075;//2.075;
-float Ki_R = 0.0;
-float Kd_R = 0.005;//0.005;
-GyverPID regulator_R(Kp_R, Ki_R, Kd_R, dt);
 
-// Левый ПИД
-float Kp_L = 2.075;
-float Ki_L = 0.0;
-float Kd_L = 0.005; 
-GyverPID regulator_L(Kp_L, Ki_L, Kd_L, dt);
+// === Таймеры ===
+const unsigned long timer_timeout = dt * 1000; //мкс
+// Для остановки после 5 секунд простоя
+const unsigned int im_timer_timeout = 5000;
+const unsigned long displayInterval = 200; // обновление каждые 500 мс
 
 
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x60);
 
-#define MOTOR_L 0x00
-#define MOTOR_R 0x02
 
-// Для энкодеров
+
+// =======================================================================================================================
+// Глобальные счётчики меток 
 long int global_pos_R = 0;
 long int global_pos_L = 0;
 
-// Для таймеров
-unsigned long tmr = 0;
-unsigned long delta = 0;
-const unsigned long timer_timeout = dt * 1000; //мкс
+void init_interraptions(){
+  // Объявление прерываний
+  attachInterrupt(PIN_R_A, Read_R_A, CHANGE);
+  attachInterrupt(PIN_R_B, Read_R_B, CHANGE);
+  attachInterrupt(PIN_L_A, Read_L_A, CHANGE);
+  attachInterrupt(PIN_L_B, Read_L_B, CHANGE);
+  // Пины энкодеров
+  pinMode(PIN_R_A, INPUT);
+  pinMode(PIN_R_B, INPUT);
+  pinMode(PIN_L_A, INPUT);
+  pinMode(PIN_L_B, INPUT);
+}
 
-// Для остановки после 5 секунд простоя
-const unsigned int im_timer_timeout = 5000;
-unsigned int im_timer = 0;
 
+
+// ========================================================================================
 
 // Переменные скорости правые
 float RealFrequencyRight = 0.0;
@@ -81,185 +84,180 @@ float RealFrequencyLeft = 0.0;
 float TargetLeft = 0.0;
 
 double max_contructive_velocity = 3.2;
+float max_frequency = 2.5;
+float max_vel = max_frequency * 2 * Pi * r;
+
+// Правый ПИД
+GyverPID regulator_R(Kp_R, Ki_R, Kd_R, dt);
+
+// Левый ПИД
+GyverPID regulator_L(Kp_L, Ki_L, Kd_L, dt);
+
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x60);
+
+#define MOTOR_L 0x00
+#define MOTOR_R 0x02
+
+INA219 INA(0x41);
+
+
+// ========================================================================================================
+
+GyverOLED<SSD1306_128x32, OLED_BUFFER> oled;  // SSD1306 128x64 с буферизацией
+
+void init_oled(){
+  oled.init();            // инициализация дисплея
+  oled.clear();           // очистка буфера
+  oled.home();            // курсор в (0,0)
+  oled.print("ESP32 ready");
+  oled.update();          // вывод на экран
+  delay(1000);
+}
+
+
+String pwd_short;
+int pros;
+float bus_voltage, shunt_v, current;
+
+
+
+
+
+// Настройки для записи в постоянную память
+#define RW_MODE false
+#define RO_MODE true
+Preferences fleshMemory;
+
+// Для таймеров
+unsigned long tmr = 0;
+unsigned long delta = 0;
+unsigned long lastDisplayUpdate = 0;
+unsigned int im_timer = 0;
 
 double x_pos_ = 0.0;
 double y_pos_ = 0.0;
 double heading_ = 0.0;
-String input_m[8] = {"", "", "", "", "", "", "", ""};
+
+// Переменные для хранения принятых данных
+String wifi_ssid = "";
+String wifi_password = "";
+String wifi_ip = "";
+
 String feedback_msg_str = "";
-
-
-// Для прерываний (машины состояний)
-bool ReadPIN_R_A_A;
-bool ReadPIN_R_B_A;
-bool ReadPIN_R_A_B;
-bool ReadPIN_R_B_B;
-bool ReadPIN_L_A_A;
-bool ReadPIN_L_B_A;
-bool ReadPIN_L_A_B;
-bool ReadPIN_L_B_B;
+String input_m[8] = {"", "", "", "", "", "", "", ""};
+String input_j[3] = {"", "", ""};
 
 
 
-// Функции на прерывания для считывания изменения меток с каждого канала
-// Функции идентичны, только для разных каналов
-IRAM_ATTR void Read_R_A(){
-  ReadPIN_R_A_A = digitalRead(PIN_R_A);
-  ReadPIN_R_B_A = digitalRead(PIN_R_B);
+// ===== Переменные для приёма с Jetson через Serial (USB) - основной канал связи =====
+String mainInputString = "";         // a String to hold incoming data
+bool mainStringComplete = false;  // whether the string is complete
+bool mainInputOpen = false;
+// ====================================================================================
 
-  switch (ReadPIN_R_A_A) {
-    case 0:
-      if (ReadPIN_R_B_A == 1) {global_pos_R++; break;}
-      if (ReadPIN_R_B_A == 0) {global_pos_R--; break;}
-      break;
-    
-    case 1:
-      if (ReadPIN_R_B_A == 1) {global_pos_R--; break;}
-      if (ReadPIN_R_B_A == 0) {global_pos_R++; break;}
-      break;
-  }
-}
+// ===== Переменные для приёма с Jetson через Serial2 - дополнительный канал связи=====
+String addictionInputString = "";
+bool addictionStringComplete = false;
+bool addictionInputOpen = false;
+// ====================================================================================
 
-IRAM_ATTR void Read_R_B(){
-  ReadPIN_R_A_B = digitalRead(PIN_R_A);
-  ReadPIN_R_B_B = digitalRead(PIN_R_B);
 
-  switch (ReadPIN_R_B_B) {
-    case 0:
-      if (ReadPIN_R_A_B == 1) {global_pos_R--; break;}
-      if (ReadPIN_R_A_B == 0) {global_pos_R++; break;}
-      break;
-    
-    case 1:
-      if (ReadPIN_R_A_B == 1) {global_pos_R++; break;}
-      if (ReadPIN_R_A_B == 0) {global_pos_R--; break;}
-      break;
-  }
-}
 
-IRAM_ATTR void Read_L_A(){
-  ReadPIN_L_A_A = digitalRead(PIN_L_A);
-  ReadPIN_L_B_A = digitalRead(PIN_L_B);
-
-  switch (ReadPIN_L_A_A) {
-    case 0:
-      if (ReadPIN_L_B_A == 1) {global_pos_L++; break;}
-      if (ReadPIN_L_B_A == 0) {global_pos_L--; break;}
-      break;
-    
-    case 1:
-      if (ReadPIN_L_B_A == 1) {global_pos_L--; break;}
-      if (ReadPIN_L_B_A == 0) {global_pos_L++; break;}
-      break;
-  }
-}
-
-IRAM_ATTR void Read_L_B(){
-  ReadPIN_L_A_B = digitalRead(PIN_L_A);
-  ReadPIN_L_B_B = digitalRead(PIN_L_B);
-
-  switch (ReadPIN_L_B_B) {
-    case 0:
-      if (ReadPIN_L_A_B == 1) {global_pos_L--; break;}
-      if (ReadPIN_L_A_B == 0) {global_pos_L++; break;}
-      break;
-    
-    case 1:
-      if (ReadPIN_L_A_B == 1) {global_pos_L++; break;}
-      if (ReadPIN_L_A_B == 0) {global_pos_L--; break;}
-      break;
-  }
-}
-
-// Управление моторами с помощью ШИМ
-void motorWrite(int CH, float set_speed) {
-
-  int16_t PWM = 0;
-  set_speed = set_speed;
-  if (CH == 0x00) set_speed *= -1;  // Инвертирование левого двигателя
-  if (set_speed > 0)                // Вращение вперед
-  {
-    PWM = set_speed * 4096;
-    pwm.setPin(CH + 1, 0, false);  // Переключение направления вращения (если вращался в эту сторону)
-    pwm.setPin(CH + 0, PWM, false);
-  } else                            // Вращение назад
-  {
-    set_speed *= -1;
-    PWM = set_speed * 4096;
-    pwm.setPin(CH + 0, 0, false);  // Переключенеи направления вращения (если вращался в эту сторону) CH+0 и CH+1 нужны для выбора канала
-    pwm.setPin(CH + 1, PWM, false);
-  }
-}
-
-void odomPublish (double x_pos_, double y_pos_, double heading_, double linear_vel_x, double angular_vel_z, double left_wheel_velocity, double right_wheel_velocity) {
-    feedback_msg_str = 
-    "$1;" +
-    String(x_pos_, 5) + ';' +
-    String(y_pos_, 5) + ';' +
-    String(heading_, 5) + ';' +
-    String(linear_vel_x, 5) + ';' +
-    String(angular_vel_z, 5) + ';' + 
-    String(left_wheel_velocity, 5) + ';' + 
-    String(right_wheel_velocity, 5) + ';' + 
-    "#";
-  Serial.println(feedback_msg_str);
-}
-
-void regulatorsCoefficientsPublish (double Kp_L, double Ki_L, double Kd_L, double Kp_R, double Ki_R, double Kd_R) {
-    feedback_msg_str = 
-    "$2;" +
-    String(Kp_L, 5) + ';' +
-    String(Ki_L, 5) + ';' +
-    String(Kd_L, 5) + ';' +
-    String(Kp_R, 5) + ';' +
-    String(Ki_R, 5) + ';' + 
-    String(Kd_R, 5) + ';' + 
-    "#";
-  Serial.println(feedback_msg_str);
-}
-
-//int map(int value, int fromLow, int fromHigh, int toLow, int toHigh);
-float mapFloat(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
-    float temp_value;
-    if (value < fromLow) {temp_value = fromLow;}
-    else if (value > fromHigh) {temp_value = fromHigh;}
-    else {
-      temp_value = value;
-    }
-    return (temp_value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-}
-
-void speed_converter(double xl, double zw) {
-  TargetLeft = xl - zw * l / 2;
-  TargetRight = xl + zw * l / 2;
-  TargetLeft = mapFloat(TargetLeft, -max_vel*0.8, max_vel*0.8, -0.8, 0.8);
-  TargetRight = mapFloat(TargetRight, -max_vel*0.8, max_vel*0.8, -0.8, 0.8);
-}
-
-void cut_speeds(float V_l, float V_r){
-  TargetLeft = mapFloat(V_l, -max_vel*0.8, max_vel*0.8, -0.8, 0.8);
-  TargetRight = mapFloat(V_r, -max_vel*0.8, max_vel*0.8, -0.8, 0.8);
-}
-
-//Ответ на входное сообщение
+//Ответ на входное сообщение по Serial0 (USB)
 void serialEvent() {
   im_timer = millis();
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    if(inChar == '$' or input_open == true){
-      // add it to the inputString:
-      inputString += inChar;
-      input_open = true;
+    if(inChar == '$' or mainInputOpen == true){
+      // add it to the mainInputString:
+      mainInputString += inChar;
+      mainInputOpen = true;
     }
     // if the incoming character is a newline, set a flag so the main loop can
     // do something about it:
     if (inChar == '#') {
-      stringComplete = true;
-      input_open = false;
+      mainStringComplete = true;
+      mainInputOpen = false;
     }
   }
 }
+
+
+void parseJetsonMessage(String input){
+  String trimmed = addictionInputString.substring(1, addictionInputString.length() - 2);
+  String parts[4]; // массив для 4 элементов
+  int count = 0;   // сколько уже сохранили
+
+  int start = 0;
+  int semicolon = trimmed.indexOf(';');
+
+  while (semicolon != -1 && count < 4) {
+    parts[count++] = trimmed.substring(start, semicolon);
+    start = semicolon + 1;
+    semicolon = trimmed.indexOf(';', start);
+  }
+
+  // Последняя часть
+  if (count < 4) {
+    parts[count++] = trimmed.substring(start);
+  }
+
+  // Теперь можно обратиться к элементам массива
+  // или, если очень хочется, присвоить отдельным переменным:
+  // String msg_type = parts[0];
+  wifi_ssid = parts[1];
+  wifi_password = parts[2];
+  wifi_ip = parts[3];
+}
+
+void read_serial1(){
+  while (Serial1.available()) {
+    char inChar = (char)Serial1.read();
+    if (inChar == '$' || addictionInputOpen) {
+      addictionInputString += inChar;
+      addictionInputOpen = true;
+    }
+    if (inChar == '#') {
+      addictionStringComplete = true;
+      addictionInputOpen = false;
+    }
+  }
+}
+
+void print_telemetry(){
+  oled.clear();
+  oled.home();  // курсор в (0,0)
+
+  oled.print("SSID: ");
+  oled.println(wifi_ssid.substring(0, 15));  // обрезаем до 16 символов
+
+  oled.print("IP: ");
+  oled.println(wifi_ip);
+
+  oled.print("PWD: ");
+  pwd_short = wifi_password.substring(0, 14);
+  if (wifi_password.length() > 14) pwd_short += "...";
+  oled.println(pwd_short);
+
+  oled.print("Bat: ");
+  bus_voltage = INA.getBusVoltage();
+  shunt_v = INA.getShuntVoltage_mV();
+
+  pros = (bus_voltage - min_voltage) / (max_voltage - min_voltage) * 100;
+  current = shunt_v / 0.1 / 1000;
+  oled.print(bus_voltage);
+  oled.print("V ");
+  oled.print(pros);
+  oled.print("% ");
+  oled.print(current);
+  oled.println("A");
+  oled.update();  // отправляем буфер на дисплей
+}
+
+#define LED_PIN 13 // Оставлен для debug
+
 
 void raise_error(){
   while(true){
@@ -271,33 +269,24 @@ void raise_error(){
 }
 
 void setup() {
-  // Объявление прерываний
-  attachInterrupt(PIN_R_A, Read_R_A, CHANGE);
-  attachInterrupt(PIN_R_B, Read_R_B, CHANGE);
-  attachInterrupt(PIN_L_A, Read_L_A, CHANGE);
-  attachInterrupt(PIN_L_B, Read_L_B, CHANGE);
+
+  init_interraptions();
+  init_motor_control();
 
   // Светодиод ошибки
   pinMode(LED_PIN, INPUT); // Оставлен для debug
 
-  // Пины энкодеров
-  pinMode(PIN_R_A, INPUT);
-  pinMode(PIN_R_B, INPUT);
-  pinMode(PIN_L_A, INPUT);
-  pinMode(PIN_L_B, INPUT);
+  // ===================== ИНИЦИАЛИЗАЦИЯ ДИСПЛЕЯ (GyverOLED) =====================
+  Wire.begin();           // I2C на пинах 21 (SDA), 22 (SCL)
+  INA.begin();
+  init_oled();
 
-  // Подключение ШИМ-модуляции
-  delay(10);
-  pwm.begin();
-  pwm.setPWMFreq(1000);
-  delay(10);
-  
-  // Настройка ПИДов: установка пределов
-  regulator_R.setLimits(-1.0, 1.0);
-  regulator_L.setLimits(-1.0, 1.0);
+  // =========================================================================
 
   Serial.begin(115200);
-  inputString.reserve(250);
+  Serial1.begin(115200);    // Порт 2 (пины TX2=17, RX2=16 по умолчанию)
+  mainInputString.reserve(250);
+  addictionInputString.reserve(250);
   
   delay(100);
 
@@ -305,8 +294,6 @@ void setup() {
   bool tpInit = fleshMemory.isKey("nvsInit");
 
   if (tpInit == false) {
-
-    Serial.println("First time run the program");
 
     fleshMemory.end();                             
     fleshMemory.begin("Memory1", RW_MODE);
@@ -391,15 +378,15 @@ void loop() {
   }
 
     //Обработка входного значения
-  if (stringComplete) {
+  if (mainStringComplete) {
 
     unsigned int i = 0;
     unsigned int j = 0;
 
     // msg_type
-    for (i = 1; i < inputString.length()-1; i++){
-      if (inputString[i] == ';') break;
-      input_m[0] += inputString[i];
+    for (i = 1; i < mainInputString.length()-1; i++){
+      if (mainInputString[i] == ';') break;
+      input_m[0] += mainInputString[i];
     }
     char str1[input_m[0].length() + 1];
     for(j=0; j < input_m[0].length(); j++) str1[j] = input_m[0][j];
@@ -414,9 +401,9 @@ void loop() {
       unsigned short num_flied = 2;
 
       for (j = 1; j <= num_flied; j++){
-        for (i = i+1; i < inputString.length()-1; i++){
-          if (inputString[i] == ';') break;
-          input_m[j] += inputString[i];
+        for (i = i+1; i < mainInputString.length()-1; i++){
+          if (mainInputString[i] == ';') break;
+          input_m[j] += mainInputString[i];
         }
       }
 
@@ -442,9 +429,9 @@ void loop() {
       unsigned short num_flied = 2;
 
       for (j = 1; j <= num_flied; j++){
-        for (i = i+1; i < inputString.length()-1; i++){
-          if (inputString[i] == ';') break;
-          input_m[j] += inputString[i];
+        for (i = i+1; i < mainInputString.length()-1; i++){
+          if (mainInputString[i] == ';') break;
+          input_m[j] += mainInputString[i];
         }
       }
       char str2[input_m[1].length() + 1]; 
@@ -469,9 +456,9 @@ void loop() {
       unsigned short num_flied = 6;
 
       for (j = 1; j <= num_flied; j++){
-        for (i = i+1; i < inputString.length()-1; i++){
-          if (inputString[i] == ';') break;
-          input_m[j] += inputString[i];
+        for (i = i+1; i < mainInputString.length()-1; i++){
+          if (mainInputString[i] == ';') break;
+          input_m[j] += mainInputString[i];
         }
       }
 
@@ -515,9 +502,9 @@ void loop() {
       unsigned short num_flied = 6;
 
       for (j = 1; j <= num_flied; j++){
-        for (i = i+1; i < inputString.length()-1; i++){
-          if (inputString[i] == ';') break;
-          input_m[j] += inputString[i];
+        for (i = i+1; i < mainInputString.length()-1; i++){
+          if (mainInputString[i] == ';') break;
+          input_m[j] += mainInputString[i];
         }
       }
 
@@ -578,14 +565,33 @@ void loop() {
         regulator_R.Kd
       );
     }
+    
+
 
     // else{
     //   raise_error();
     // }
 
-    inputString = "";
-    stringComplete = false;
+    mainInputString = "";
+    mainStringComplete = false;
 
   }
+  
+  // ===================== ЧТЕНИЕ ДАННЫХ С JETSON NANO (Serial1) =====================
+  read_serial1();
 
+  if (addictionStringComplete) {
+    parseJetsonMessage(addictionInputString);
+    addictionInputString = "";
+    addictionStringComplete = false;
+  }
+  // =========================================================================
+
+
+  // ===================== ОБНОВЛЕНИЕ ДИСПЛЕЯ =====================
+  if (millis() - lastDisplayUpdate > displayInterval) {
+    lastDisplayUpdate = millis();
+    print_telemetry();
+  }
+  // =========================================================================
 }

@@ -27,7 +27,7 @@ def launch_setup(context, *args, **kwargs):
 
     jetbos_mirea_description_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
-            pkg1_launch_dir, 'jetbot_mirea_rviz.launch.py'
+            pkg1_launch_dir, 'real_robot.launch.py'
             )
         ),
     )
