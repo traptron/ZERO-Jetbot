@@ -35,7 +35,7 @@ class LaserSectorFilter(Node):
         self.declare_parameter('input_topic', '/scan')   # input topic
         self.declare_parameter('output_topic', '/scan_filtered')  # output topic
         self.declare_parameter('invert_sector', False)   # invert sector (keep everything except specified)
-        self.declare_parameter('frame_id', '')   # frame_id for output topic
+        self.declare_parameter('output_frame_id', '')   # frame_id for output topic
         
         # Get parameters
         self.start_angle_deg = self.get_parameter('start_angle_deg').value
@@ -43,7 +43,7 @@ class LaserSectorFilter(Node):
         self.input_topic = self.get_parameter('input_topic').value
         self.output_topic = self.get_parameter('output_topic').value
         self.invert_sector = self.get_parameter('invert_sector').value
-        self.output_frame_id = self.get_parameter('frame_id').value
+        self.output_frame_id = self.get_parameter('output_frame_id').value
         
         
         # Convert degrees to radians
