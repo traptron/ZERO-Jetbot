@@ -10,8 +10,8 @@ sudo apt install \
     ros-$ROS_DISTRO-xacro \
     ros-$ROS_DISTRO-robot-state-publisher \
     ros-$ROS_DISTRO-joint-state-publisher \
-    ros-$ROS_DISTRO-gazebo-*
-
+    ros-$ROS_DISTRO-gazebo-* \
+    ros-$ROS-DISTRO-teleop-twist-keyboard
 
 pip install \
     pyserial==3.5 \
