@@ -30,7 +30,8 @@ from geometry_msgs.msg import Twist
 MAX_LINEAR_VELOCITY = 0.5   # м/с
 MAX_ANGULAR_VELOCITY = 0.5  # рад/с
 LINEAR_STEP = 0.01          # Шаг изменения линейной скорости
-ANGULAR_STEP = 0.05          # Шаг изменения угловой скорости
+ANGULAR_STEP = 0.05         # Шаг изменения угловой скорости
+INPUT_TIMEOUT = 0.6         # Автостоп при отсутствии ввода (сек)
 
 # Управляющие клавиши
 KEYS = {
@@ -66,6 +67,7 @@ class TeleopKeyboard(Node):
         # Current velocities
         self.linear_vel = 0.0
         self.angular_vel = 0.0
+        self.last_input_time = time.monotonic()
         
         # Terminal settings (only if stdin is a TTY)
         self.settings = None
@@ -123,21 +125,25 @@ class TeleopKeyboard(Node):
             self.linear_vel = max(self.linear_vel - LINEAR_STEP, -MAX_LINEAR_VELOCITY)
             self.angular_vel = 0.0
         elif action == 'left':
-            self.linear_vel = min(self.linear_vel + LINEAR_STEP, MAX_LINEAR_VELOCITY)
-            self.angular_vel = MAX_ANGULAR_VELOCITY * 0.5
+            if self.linear_vel == 0.0:
+                self.linear_vel = LINEAR_STEP
+            self.angular_vel = min(self.angular_vel + ANGULAR_STEP, MAX_ANGULAR_VELOCITY)
         elif action == 'right':
-            self.linear_vel = min(self.linear_vel + LINEAR_STEP, MAX_LINEAR_VELOCITY)
-            self.angular_vel = -MAX_ANGULAR_VELOCITY * 0.5
+            if self.linear_vel == 0.0:
+                self.linear_vel = LINEAR_STEP
+            self.angular_vel = max(self.angular_vel - ANGULAR_STEP, -MAX_ANGULAR_VELOCITY)
         elif action == 'rotate_left':
             self.linear_vel = 0.0
-            self.angular_vel = MAX_ANGULAR_VELOCITY
+            self.angular_vel = min(self.angular_vel + ANGULAR_STEP, MAX_ANGULAR_VELOCITY)
         elif action == 'rotate_right':
             self.linear_vel = 0.0
-            self.angular_vel = -MAX_ANGULAR_VELOCITY
+            self.angular_vel = max(self.angular_vel - ANGULAR_STEP, -MAX_ANGULAR_VELOCITY)
         elif action == 'stop':
             self.linear_vel = 0.0
             self.angular_vel = 0.0
             
+        if action is not None:
+            self.last_input_time = time.monotonic()
         return action is not None
 
     def publish_velocity(self):
@@ -174,6 +180,11 @@ class TeleopKeyboard(Node):
                     if self.update_velocity(key):
                         pass  # Velocity updated
                 
+                # Local safety: stop when keyboard input is stale
+                if time.monotonic() - self.last_input_time > INPUT_TIMEOUT:
+                    self.linear_vel = 0.0
+                    self.angular_vel = 0.0
+
                 # Update status display and publish velocity
                 self.print_status()
                 self.publish_velocity()
